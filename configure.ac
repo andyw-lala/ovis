@@ -244,6 +244,7 @@ OPTION_DEFAULT_ENABLE([clock], [ENABLE_CLOCK])
 OPTION_DEFAULT_ENABLE([synthetic], [ENABLE_SYNTHETIC])
 OPTION_DEFAULT_ENABLE([varset], [ENABLE_VARSET])
 OPTION_DEFAULT_ENABLE([lnet_stats], [ENABLE_LNET_STATS])
+OPTION_DEFAULT_DISABLE([tx2mon], [ENABLE_TX2MON])
 OPTION_DEFAULT_ENABLE([meminfo], [ENABLE_MEMINFO])
 OPTION_DEFAULT_DISABLE([filesingle], [ENABLE_FILESINGLE])
 OPTION_DEFAULT_DISABLE([msr_interlagos], [ENABLE_MSR_INTERLAGOS])
@@ -405,6 +406,11 @@ AX_LIB_READLINE
 LDFLAGS_READLINE=$LIBS
 AC_SUBST([LDFLAGS_READLINE])
 LIBS=$TMPLIBS
+
+if test -z "$ENABLE_TX2MON_TRUE"; then
+	AC_CHECK_HEADER(tx2mon/mc_oper_region.h, [], AC_MSG_ERROR([tx2mon/mc_oper_region.h not found.
+use --disable-tx2mon except on thunderx2 with the tx2mon package installed.]))
+fi
 
 dnl Munge library check
 if test -z "$ENABLE_MUNGE_TRUE"; then
@@ -749,6 +755,7 @@ ldms/src/sampler/spank/Makefile
 ldms/src/sampler/papi/Makefile
 ldms/src/sampler/appinfo_lib/Makefile
 ldms/src/sampler/kgnilnd/Makefile
+ldms/src/sampler/tx2mon/Makefile
 ldms/src/sampler/meminfo/Makefile
 ldms/src/sampler/procinterrupts/Makefile
 ldms/src/sampler/procstat/Makefile

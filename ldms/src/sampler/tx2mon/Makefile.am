@@ -20,12 +20,13 @@ AM_CPPFLAGS = @OVIS_INCLUDE_ABS@
 
 AM_LDFLAGS = @OVIS_LIB_ABS@
 
-COMMON_LIBADD = -lsampler_base -lldms
+COMMON_LIBADD = -lsampler_base -lldms @LDFLAGS_GETTIME@ -lovis_util -lcoll
 
-if ENABLE_TX2MON_SAMPLER
+if ENABLE_TX2MON
 libtx2mon_la_SOURCES = tx2mon.c tx2mon.h
-libtx2mon_la_CFLAGS = -DSYSCONFDIR='"$(sysconfdir)"'
 libtx2mon_la_LIBADD = $(COMMON_LIBADD)
-
-pkglib_LTLIBRARIES += libtx2mon.la
+pkglib_LTLIBRARIES = libtx2mon.la
+dist_man7_MANS = Plugin_tx2mon.man
+# in particular we want to avoid hard coding paths into plugins
+#libtx2mon_la_CFLAGS = -DSYSCONFDIR='"$(sysconfdir)"'
 endif
