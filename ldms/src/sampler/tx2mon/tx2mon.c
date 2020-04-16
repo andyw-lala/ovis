@@ -50,18 +50,10 @@
 #include "ldms.h"
 #include "ldmsd.h"
 #include "sampler_base.h"
+#include "tx2mon.h"
 
 static ldmsd_msg_log_f msglog;
 static ldms_set_t set = NULL;
-
-/*
- * Forward declarations.
- */
-static void term(struct ldmsd_plugin *self);
-static int config(struct ldmsd_plugin *self, struct attr_value_list *kwl, struct attr_value_list *avl);
-static const char *usage(struct ldmsd_plugin *self);
-static ldmsd_set_t get_set(struct ldmsd_sampler *self);			/* Obsolete */
-static int sample(struct ldmsd_sampler *self);
 
 /*
  * Plug-in data structure and access method.
