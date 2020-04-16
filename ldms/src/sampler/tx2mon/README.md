@@ -66,3 +66,6 @@ TODO: add --enable=tx2mon, and other options, once they are defined.
 In order to build the tx2mon sampler, the Marvell tx2mon source code needs to be resident on the build system.
 
 TODO: describe how to point the ldms build at tx2mon so it can find the file(s) it needs.
+
+## Schema
+TODO: Describe how the schema gets populated, core counts etc etc.
