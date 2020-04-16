@@ -50,11 +50,11 @@
 #include "ldms.h"
 #include "ldmsd.h"
 #include "sampler_base.h"
+#include "tx2mon.h"
 
 static ldmsd_msg_log_f msglog;
 static ldms_set_t set = NULL;
 
-#include "tx2mon.h"
 #if 0
 /*
  * Forward declarations.
