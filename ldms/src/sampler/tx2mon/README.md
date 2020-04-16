@@ -54,7 +54,7 @@ The tx2mon code is available [here](https://github.com/jchandra-cavm/tx2mon),
 it contains two components:
 * kernel module
 
-  This makes the data structures from the M3 manangement processor on each RX2 die available in sysfs
+  This makes the data structures from the M3 manangement processor on each TX2 die available in sysfs
 * user application
 
   This mmaps the sysfs files, and displays their contents in real time.
