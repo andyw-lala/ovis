@@ -74,9 +74,9 @@ typedef enum {CAP_BASIC = 0x00, CAP_THROTTLE = 0x01} tx2mon_cap;
  * Per-CPU record keeping
  */
 struct cpu_info {
-	int	fd,		/* fd of raw file opened */
-	int	metric_offset,	/* starting offset into schema for this CPU */
-	struct	mc_oper_region *mcp,	/* mmapped data structure (from fd) */
+	int	fd;		/* fd of raw file opened */
+	int	metric_offset;	/* starting offset into schema for this CPU */
+	struct	mc_oper_region *mcp;	/* mmapped data structure (from fd) */
 };
 
 /*
@@ -85,10 +85,10 @@ struct cpu_info {
  * TODO: Investigate pulling base & set into here.
  */
 struct tx2mon_sampler {
-	int	n_cpu,		/* number of CPUs (e.g. TX2 chips) present */
-	int	n_core,		/* cores *per CPU* */
-	int	n_thread,	/* threads *per core* (unused currently) */
-	tx2mon_cap	cap,	/* capabilites of kernel module */
+	int	n_cpu;		/* number of CPUs (e.g. TX2 chips) present */
+	int	n_core;		/* cores *per CPU* */
+	int	n_thread;	/* threads *per core* (unused currently) */
+	tx2mon_cap	cap;	/* capabilites of kernel module */
 
-	struct	cpu_info[TX2MON_MAX_CPU];
+	struct cpu_info cpu[TX2MON_MAX_CPU];
 } ;

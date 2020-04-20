@@ -47,6 +47,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <time.h>
 #include "ldms.h"
@@ -58,6 +60,8 @@ static ldmsd_msg_log_f msglog;
 static ldms_set_t set = NULL;
 #define SAMP "tx2mon"
 static base_data_t base;
+
+static struct tx2mon_sampler tx2mon;
 
 /*
  * Plug-in data structure and access method.
@@ -122,13 +126,13 @@ static void term(struct ldmsd_plugin *self)
 	struct cpu_info *cp;
 
 	for (i = 0; i < tx2mon.n_cpu; i++) {
-		cp = &(tx2mon.cpu_info[i]);
+		cp = &(tx2mon.cpu[i]);
 
 		/*
 		 * None of these test should be required, but ...
 		 */
 		if ((cp->mcp != NULL) && (cp->mcp != MAP_FAILED)) {
-			munmap(cp->mcp);
+			munmap(cp->mcp, sizeof(struct mc_oper_region));
 			cp->mcp = NULL;
 		}
 
@@ -206,7 +210,7 @@ static int create_metric_set(base_data_t base)
 	 * space between, any problem => fail.
 	 */
 	if (fscanf(socinfo, "%d %d %d", &(tx2mon.n_cpu),
-				&(tx2mon.ncore), &(tx2mon.nthread)) != 3) {
+				&(tx2mon.n_core), &(tx2mon.n_thread)) != 3) {
 		msglog(LDMSD_LERROR, SAMP ": cannot parse '%s'.\n", path);
 		fclose(socinfo);
 		free(path);
@@ -220,13 +224,13 @@ static int create_metric_set(base_data_t base)
 			tx2mon.n_cpu, tx2mon.n_core, tx2mon.n_thread);
 
 	if (TX2MON_MAX_CPU < tx2mon.n_cpu) {
-		msglog(LDMSD_LWARN, SAMP ": sampler built for max %d CPUs, system reporting %d CPUs, limiting reporting to %d.\n",
+		msglog(LDMSD_LWARNING, SAMP ": sampler built for max %d CPUs, system reporting %d CPUs, limiting reporting to %d.\n",
 				TX2MON_MAX_CPU, tx2mon.n_cpu, TX2MON_MAX_CPU);
 		tx2mon.n_cpu = TX2MON_MAX_CPU;
 	}
 
 	if (MAX_CPUS_PER_SOC < tx2mon.n_core) {
-		msglog(LDMSD_LWARN, SAMP ": sampler built for max %d cores, system reporting %d cores, limiting reporting to %d.\n",
+		msglog(LDMSD_LWARNING, SAMP ": sampler built for max %d cores, system reporting %d cores, limiting reporting to %d.\n",
 				MAX_CPUS_PER_SOC, tx2mon.n_core, MAX_CPUS_PER_SOC);
 		tx2mon.n_core = MAX_CPUS_PER_SOC;
 	}
@@ -244,7 +248,7 @@ static int create_metric_set(base_data_t base)
 	 * Iterate over all CPUs.
 	 */
 	for (i = 0; i < tx2mon.n_cpu; i++) {
-		cp = &(tx2mon.cpu_info[i]);
+		cp = &(tx2mon.cpu[i]);
 
 		cp->mcp = NULL;
 		cp->metric_offset = ldms_schema_metric_count_get(schema);
@@ -271,8 +275,8 @@ static int create_metric_set(base_data_t base)
 			 * Free up previously allcoated resources, and bail.
 			 */
 			for (i--; i >= 0; i--) {
-				cp = &(tx2mon.cpu_info[i]);
-				munmap(cp->mcp);
+				cp = &(tx2mon.cpu[i]);
+				munmap(cp->mcp, sizeof(struct mc_oper_region));
 				close(cp->fd);
 			}
 				
@@ -291,8 +295,8 @@ static int create_metric_set(base_data_t base)
 			 * Free up previously allcoated resources, and bail.
 			 */
 			for (i--; i >= 0; i--) {
-				cp = &(tx2mon.cpu_info[i]);
-				munmap(cp->mcp);
+				cp = &(tx2mon.cpu[i]);
+				munmap(cp->mcp, sizeof(struct mc_oper_region));
 				close(cp->fd);
 			}
 				
@@ -312,7 +316,7 @@ static int create_metric_set(base_data_t base)
 				tx2mon.cap |= CAP_THROTTLE;
 			}
 			if (i > 1) {
-				msglog(LDMSD_LWARN, SAMP ": unknown capability: %d. Ignoring.\n", i);
+				msglog(LDMSD_LWARNING, SAMP ": unknown capability: %d. Ignoring.\n", i);
 			}
 		}
 
@@ -326,9 +330,9 @@ static int create_metric_set(base_data_t base)
 		rc = errno;
 
 		for (i = 0; i < tx2mon.n_cpu; i++) {
-			cp = &(tx2mon.cpu_info[i]);
+			cp = &(tx2mon.cpu[i]);
 
-			munmap(cp->mcp);
+			munmap(cp->mcp, sizeof(struct mc_oper_region));
 			close(cp->fd);
 		}
 		return rc;
